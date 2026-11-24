@@ -1,0 +1,16 @@
+#!/bin/bash
+# enhanced-glab for Git Bash: `glab add|list|use|remove` go to glab-accounts.ps1 (next to this file); every other command to the real glab.exe.
+if [ -z "${GLAB_REAL:-}" ]; then
+  # The first glab.exe on PATH is the real one (this folder holds a script named glab, not glab.exe).
+  GLAB_REAL="$(type -P glab.exe 2>/dev/null)"
+  [ -n "$GLAB_REAL" ] || { echo "glab: the real glab.exe is not on PATH: install glab, or set GLAB_REAL" >&2; exit 1; }
+  GLAB_REAL="$(cygpath -w "$GLAB_REAL")"
+fi
+export GLAB_REAL
+case "${1:-}" in
+  add|list|use|remove)
+    here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # -ExecutionPolicy Bypass for this one script: it is not signed, and many PCs refuse unsigned scripts.
+    exec powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$here/glab-accounts.ps1")" "$@" ;;
+esac
+exec "$(cygpath -u "$GLAB_REAL")" "$@"
